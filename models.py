@@ -81,13 +81,13 @@ class CNN(torch.nn.Module):
         super().__init__()
         kwargs = {"device": device, "dtype": dtype}
 
-        ker1size = (4, 4)
-        ker2size = (2, 2)
-        chans1 = 10
-        chans2 = 20
-        chans3 = 40
-        p_dropout = 0.4
-        linearsize = 500
+        ker1size = (7, 7)
+        ker2size = (3, 3)
+        chans1 = 20
+        chans2 = 40
+        chans3 = 80
+        p_dropout = 0.3
+        linearsize = 250
 
         self.conv1 = Convolution_2d(in_channels, chans1, in_imgsize, ker1size, **kwargs)
         self.maxpool1 = MaxPool_2d(self.conv1.out_imgsize, **kwargs)
@@ -189,7 +189,7 @@ class SGD_Trainer():
                             param -= learning_rate * param.grad
 
                 running_loss += loss.item()
-                if i % 300 == 99:  
+                if i % 200 == 0:  
                     print(f'[Epoch: {epoch + 1}, batch: {i + 1}]/{n_batches} \
                         loss: {running_loss / 100:.3f}')
                     running_loss = 0.0
