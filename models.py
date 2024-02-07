@@ -25,8 +25,7 @@ class MLP(torch.nn.Module):
         dtype: The data type for the MLP's parameters.
     """
 
-    def __init__(self, layer_sizes: list[int], weight_init_scheme: str="kaiming", device=None, 
-                 dtype=None) -> None:
+    def __init__(self, layer_sizes, weight_init_scheme="kaiming", device=None, dtype=None):
         super().__init__()
         kwargs = {'weight_init_scheme': weight_init_scheme, 'device': device, 'dtype': dtype}
 
@@ -50,7 +49,7 @@ class MLP(torch.nn.Module):
         return output
 
     @torch.no_grad
-    def get_classification_accuracy(self, X: Tensor, y: Tensor, batch_size=64) -> float:
+    def get_classification_accuracy(self, X, y, batch_size=64):
         """
         Calculate the classification accuracy of the model, assuming the largest value 
         of self(X) is taken as the final prediction. 
@@ -219,8 +218,3 @@ class SGD_Trainer():
             print(f'Best accuracy: {self.cur_best_accuracy:.3f}')
             print(f'====================')
 
-
-
-#X= torch.zeros((1, 1, 5, 5))+1
-#cnn = CNN((5, 5), 1)
-#print(cnn(X))
