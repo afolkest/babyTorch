@@ -1,2 +1,2 @@
 # babyTorch
-Implementation of deep learning architectures from scratch, for learning purposes 
+Implementation and training of various deep learning architectures from scratch, for learning purposes 
