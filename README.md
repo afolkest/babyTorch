@@ -11,3 +11,5 @@ To implement:
   - Transformer
   - RNN? 
 
+Note: 
+credit for Bach dataset: https://github.com/ageron/handson-ml2/blob/master/datasets/jsb_chorales/jsb_chorales.tgz
