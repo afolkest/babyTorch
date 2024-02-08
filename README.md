@@ -1,15 +1,22 @@
 # babyTorch
-Implementation and training of various deep learning architectures from scratch, for learning purposes.
+This repo is an implementation various deep learning architectures and methods 
+from scratch, with the goal of getting an intimate understanding of their inner
+workings. The implementation relies of the `torch.Tensor` and `torch.nn.Module` classes 
+from PyTorch to handle Autodiff for backpropagation, but otherwise the important
+elements of the architectures and methods are implemented from scratch. 
 
-Currently implemented:
-  - Linear layer, Convolutional layer (2d), Dropout layer (1d), Max pool layer (2d)
-  - Adam optimizer
-  - Examples where we build and train deep learning models using these models.
+What is implemented so far:
+    - Adam and SGD optimization
+    - Linear layers
+    - Dropout layers (1d)
+    - Convolutional layers (2d)
+    - Maxpool layers (2d)
+    - Long short-term memory (LSTM)
 
-To implement:
-  - LSTM
+There are currently also three included examples training a MLP, a CNN, and a
+LSTM. 
+
+Currently under implementation:
   - Transformer
-  - RNN? 
 
-Note: 
-credit for Bach dataset: https://github.com/ageron/handson-ml2/blob/master/datasets/jsb_chorales/jsb_chorales.tgz
+# Bach dataset: https://github.com/ageron/handson-ml2/blob/master/datasets/jsb_chorales/jsb_chorales.tgz
