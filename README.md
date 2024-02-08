@@ -1,7 +1,7 @@
 # babyTorch
 This repo is an implementation various deep learning architectures and methods 
 from scratch, with the goal of getting an intimate understanding of their inner
-workings. The implementation relies of the `torch.Tensor` and `torch.nn.Module` classes 
+workings. The implementation relies on the `torch.Tensor` and `torch.nn.Module` classes 
 from PyTorch to handle automatic differentiation for backpropagation, but otherwise the important
 elements of the architectures and methods are implemented from scratch. 
 
