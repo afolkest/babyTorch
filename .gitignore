@@ -1,3 +1,6 @@
 __pycache__/
-datasets/
+datasets/cifar_labels.csv
+datasets/cifar_features.csv
+datasets/mnist_labels.csv
+datasets/mnist_features.csv
 .DS_store
