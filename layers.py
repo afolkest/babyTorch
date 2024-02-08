@@ -57,7 +57,17 @@ class Linear(torch.nn.Module):
               + ". Total params = " + str(self.n_params)
 
 class ConvolutionBase(torch.nn.Module): 
-    # Description
+    """
+    Base class for convolutional layers.
+
+    Args:
+        in_imgsize (tuple): Input image size (height, width).
+        kernel (tuple): Convolutional kernel size (height, width).
+        stride (tuple): Stride of the convolution operation (height, width).
+        padding_type (str): Type of padding to use.
+        device (torch.device, optional): Device for the layer parameters and operations.
+        dtype (torch.dtype, optional): Data type for the layer parameters and operations. 
+    """
     def __init__(self, in_imgsize, kernel, stride=(1,1), padding_type="same", device=None, 
                  dtype=None):
         super().__init__()
@@ -90,6 +100,19 @@ class ConvolutionBase(torch.nn.Module):
                        h_out_grid*self.stride[0] + kh_grid,  w_out_grid*self.stride[1]+kw_grid] = 1 
 
 class Convolution_2d(ConvolutionBase):
+    """
+    2D convolutional layer.
+
+    Args:
+        in_channels (int): Number of input channels.
+        out_channels (int): Number of output channels.
+        in_imgsize (tuple): Input image size (height, width).
+        kernel (tuple): Convolutional kernel size (height, width).
+        stride (tuple): Stride of the convolution operation (height, width). Default is (1, 1).
+        padding_type (str): Type of padding to use. Default is "same".
+        device (torch.device, optional): Device for the layer parameters and operations. 
+        dtype (torch.dtype, optional): Data type for the layer parameters and operations.
+    """
     def __init__(self, in_channels, out_channels, in_imgsize, kernel, stride=(1,1), 
                  padding_type='same', device=None, dtype=None):
         super().__init__(in_imgsize, kernel, stride, padding_type, device, dtype)
@@ -129,6 +152,17 @@ class Convolution_2d(ConvolutionBase):
                 f"padding=(height: {self.height_pad}, width: {self.width_pad}))")
 
 class MaxPool_2d(ConvolutionBase):
+    """
+    2D max pooling layer.
+
+    Args:
+        in_imgsize (tuple): Input image size (height, width).
+        kernel (tuple): Max pooling kernel size (height, width). Default is (2, 2).
+        stride (tuple): Stride of the max pooling operation (height, width). Default is (2, 2).
+        padding_type (str): Type of padding to use. Default is "same".
+        device (torch.device, optional): Device for the layer parameters and operations.
+        dtype (torch.dtype, optional): Data type for the layer parameters and operations. 
+    """
     def __init__(self, in_imgsize, kernel=(2,2), stride=(2,2), padding_type='same', 
                  device=None, dtype=None):
         super().__init__(in_imgsize, kernel, stride, padding_type, device, dtype)
@@ -151,6 +185,12 @@ class MaxPool_2d(ConvolutionBase):
                 f"padding=(height: {self.height_pad}, width: {self.width_pad}))")
 
 class Dropout_1d(torch.nn.Module):
+    """
+    1D dropout layer.
+
+    Args:
+        p (float): Dropout probability.
+    """
     def __init__(self, p):
         super().__init__()
         self.p = p 
@@ -162,6 +202,17 @@ class Dropout_1d(torch.nn.Module):
         return X 
 
 class LSTM(torch.nn.Module):
+    """
+    Long Short-Term Memory (LSTM) layer.
+
+    Args:
+        in_dim (int): Input dimension.
+        hidden_dim (int): Hidden dimension.
+        num_layers (int): Number of LSTM layers. Default is 1.
+        p_dropout (float): Dropout probability. Default is 0.
+        dtype (torch.dtype, optional): Data type for the layer parameters and operations. 
+        device (torch.device, optional): Device for the layer parameters and operations. 
+    """
     def __init__(self, in_dim, hidden_dim, num_layers=1, p_dropout=0, dtype=None, device=None):
         super().__init__()
         self.in_dim = in_dim 
@@ -221,14 +272,3 @@ class LSTM(torch.nn.Module):
             output[t] = h[-1]
 
         return output, (h, c)
-
-class generic(torch.nn.module):
-
-    def __init__(self):
-        super().__init__()
-
-    def forward(self):
-        pass
-
-    def _str__(self):
-        pass
