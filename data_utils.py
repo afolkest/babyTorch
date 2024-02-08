@@ -2,6 +2,7 @@ import pathlib
 import torch 
 import numpy as np
 from sklearn.datasets import fetch_openml 
+import requests
 
 def load_mnist(device): 
     "Loads mnist dataset into Tensors on given device"
