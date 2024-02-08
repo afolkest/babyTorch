@@ -5,7 +5,7 @@ workings. The implementation relies of the `torch.Tensor` and `torch.nn.Module` 
 from PyTorch to handle Autodiff for backpropagation, but otherwise the important
 elements of the architectures and methods are implemented from scratch. 
 
-What is implemented so far: \
+What is implemented so far: 
   - Adam and SGD optimization
   - Linear layers
   - Dropout layers (1d)
