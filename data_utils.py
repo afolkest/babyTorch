@@ -2,10 +2,9 @@ import pathlib
 import torch 
 import numpy as np
 from sklearn.datasets import fetch_openml 
-import requests
 
 def load_mnist(device): 
-    "Loads mnist dataset into Tensors on given device"
+    "Loads mnist (and downloads if necessary) dataset into Tensors on given device"
     script_directory = pathlib.Path(__file__).parent
     folder_path = pathlib.Path(script_directory) / "datasets"
     feature_path = folder_path / "mnist_features.csv"
@@ -24,7 +23,7 @@ def load_mnist(device):
     return X, y
 
 def load_cifar(device): 
-    "Loads mnist dataset into Tensors on given device"
+    "Loads CIFAR (and downloads if necessary) dataset into Tensors on given device"
     script_directory = pathlib.Path(__file__).parent
     folder_path = pathlib.Path(script_directory) / "datasets"
     feature_path = folder_path / "cifar_features.csv"
@@ -34,10 +33,19 @@ def load_cifar(device):
         X=torch.load(feature_path).to(device)
         y=torch.load(label_path).to(device)
     else: 
-        mnist = fetch_openml('CIFAR_10', version=1)
-        X = torch.from_numpy(mnist["data"].to_numpy().astype(np.float32)).to(device)
-        y = torch.from_numpy(mnist["target"].to_numpy().astype(int)).to(device)
+        cifar = fetch_openml('CIFAR_10', version=1)
+        X = torch.from_numpy(cifar["data"].to_numpy().astype(np.float32)).to(device)
+        y = torch.from_numpy(cifar["target"].to_numpy().astype(int)).to(device)
 
         torch.save(X, feature_path)
         torch.save(y, label_path)
     return X, y
+
+def load_bach(device): 
+    "Loads the Bach chorale dataset"
+    script_directory = pathlib.Path(__file__).parent
+    data_dir = script_directory / "datasets" / "jsb_chorales" 
+    train_files = [i for i in data_dir.glob('test/*.*')]
+    valid_files = [i for i in data_dir.glob('valid/*.*')]
+    test_files = [i for i in data_dir.glob('test/*.*')] 
+    # TODO: add functionality loading choralest to torch tensors
