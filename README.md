@@ -5,18 +5,21 @@ workings. The implementation relies of the `torch.Tensor` and `torch.nn.Module` 
 from PyTorch to handle Autodiff for backpropagation, but otherwise the important
 elements of the architectures and methods are implemented from scratch. 
 
-What is implemented so far:
-    - Adam and SGD optimization
-    - Linear layers
-    - Dropout layers (1d)
-    - Convolutional layers (2d)
-    - Maxpool layers (2d)
-    - Long short-term memory (LSTM)
+What is implemented so far: \
+  - Adam and SGD optimization
+  - Linear layers
+  - Dropout layers (1d)
+  - Convolutional layers (2d)
+  - Maxpool layers (2d)
+  - Long short-term memory (LSTM)
 
 There are currently also three included examples training a MLP, a CNN, and a
 LSTM. 
 
 Currently under implementation:
   - Transformer
+  - Training of Bach chorale generator using LSTM 
 
+<!--
 # Bach dataset: https://github.com/ageron/handson-ml2/blob/master/datasets/jsb_chorales/jsb_chorales.tgz
+-->
