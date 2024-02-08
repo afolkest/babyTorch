@@ -83,11 +83,12 @@ class CNN(torch.nn.Module):
 
         ker1size = (7, 7)
         ker2size = (3, 3)
+        # previos 20, 40, 80
         chans1 = 20
         chans2 = 40
         chans3 = 80
-        p_dropout = 0.3
-        linearsize = 250
+        p_dropout = 0.4
+        linearsize = 500
 
         self.conv1 = Convolution_2d(in_channels, chans1, in_imgsize, ker1size, **kwargs)
         self.maxpool1 = MaxPool_2d(self.conv1.out_imgsize, **kwargs)

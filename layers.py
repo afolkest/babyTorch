@@ -161,15 +161,46 @@ class Dropout_1d(torch.nn.Module):
             return mask * X
         return X 
 
-test = Tensor
+#class LSTM(torch.nn.module):
+#    def __init__(self, in_dim, hidden_dim, dtype=None, device=None):
+#        super().__init__()
+#        weight_range =  math.sqrt(1/hidden_dim)
+#        # Weights of neurons acting on the hidden states 
+#        self.hidden_weights = torch.nn.Parameter(
+#            torch.empty((4 * hidden_dim, hidden_dim), dtype=dtype, device=device)
+#            .uniform_(-weight_range, weight_range)
+#        )
+#        # Weights of neurons acting on the input 
+#        self.in_weights = torch.nn.Parameter(
+#            torch.empty((4 * hidden_dim, in_dim), dtype=dtype, device=device)
+#            .uniform_(-weight_range, weight_range)
+#        )
+#
+#        self.bias = torch.zeros(4 * hidden_dim)
+#
+#    def forward(self, X_in, h_prev, c_prev):
+#        four_linear_layers = X_in @ self.in_weights.T + h_prev @ self.hidden_weights.T + self.bias
+#        input = torch.sigmoid(four_linear_layers[:self.hidden_dim]) 
+#        forget = torch.sigmoid(four_linear_layers[self.hidden_dim: 2*self.hidden_dim])
+#        output = torch.sigmoid(four_linear_layers[2*self.hidden_dim: 3*self.hidden_dim])
+#        # As you can see, I don't know the g in the LSTM stands for 
+#        glogic = torch.tanh(four_linear_layers[3*self.hidden_dim: 4*self.hidden_dim]) 
+#
+#        c_next = forget * c_prev + input * glogic 
+#        h_next = output * torch.tanh(c_next)
+#        return h_next, ()
+#
+#
+#    def _str__(self):
+#        pass
 
-class generic(torch.nn.Module):
-
-    def __init__(self):
-        super().__init__()
-
-    def forward(self):
-        pass
-
-    def _str__(self):
-        pass
+#class generic(torch.nn.module):
+#
+#    def __init__(self):
+#        super().__init__()
+#
+#    def forward(self):
+#        pass
+#
+#    def _str__(self):
+#        pass
