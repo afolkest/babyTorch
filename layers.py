@@ -161,46 +161,74 @@ class Dropout_1d(torch.nn.Module):
             return mask * X
         return X 
 
-#class LSTM(torch.nn.module):
-#    def __init__(self, in_dim, hidden_dim, dtype=None, device=None):
-#        super().__init__()
-#        weight_range =  math.sqrt(1/hidden_dim)
-#        # Weights of neurons acting on the hidden states 
-#        self.hidden_weights = torch.nn.Parameter(
-#            torch.empty((4 * hidden_dim, hidden_dim), dtype=dtype, device=device)
-#            .uniform_(-weight_range, weight_range)
-#        )
-#        # Weights of neurons acting on the input 
-#        self.in_weights = torch.nn.Parameter(
-#            torch.empty((4 * hidden_dim, in_dim), dtype=dtype, device=device)
-#            .uniform_(-weight_range, weight_range)
-#        )
-#
-#        self.bias = torch.zeros(4 * hidden_dim)
-#
-#    def forward(self, X_in, h_prev, c_prev):
-#        four_linear_layers = X_in @ self.in_weights.T + h_prev @ self.hidden_weights.T + self.bias
-#        input = torch.sigmoid(four_linear_layers[:self.hidden_dim]) 
-#        forget = torch.sigmoid(four_linear_layers[self.hidden_dim: 2*self.hidden_dim])
-#        output = torch.sigmoid(four_linear_layers[2*self.hidden_dim: 3*self.hidden_dim])
-#        # As you can see, I don't know the g in the LSTM stands for 
-#        glogic = torch.tanh(four_linear_layers[3*self.hidden_dim: 4*self.hidden_dim]) 
-#
-#        c_next = forget * c_prev + input * glogic 
-#        h_next = output * torch.tanh(c_next)
-#        return h_next, ()
-#
-#
-#    def _str__(self):
-#        pass
+class LSTM(torch.nn.Module):
+    def __init__(self, in_dim, hidden_dim, num_layers=1, p_dropout=0, dtype=None, device=None):
+        super().__init__()
+        self.in_dim = in_dim 
+        self.hidden_dim = hidden_dim
+        self.num_layers = num_layers
+        self.p_dropout = p_dropout
 
-#class generic(torch.nn.module):
-#
-#    def __init__(self):
-#        super().__init__()
-#
-#    def forward(self):
-#        pass
-#
-#    def _str__(self):
-#        pass
+        weight_range =  math.sqrt(1/hidden_dim)
+        self.w_hidden_list = torch.nn.ParameterList()
+        self.w_in_list = torch.nn.ParameterList()
+        self.bias_list = torch.nn.ParameterList()
+
+        for i in range(num_layers):
+            # neurons acting on the hidden states 
+            self.w_hidden_list.append(torch.nn.Parameter(
+                torch.empty((4 * hidden_dim, hidden_dim), dtype=dtype, device=device)
+                .uniform_(-weight_range, weight_range))
+                )
+            # neurons acting on the input. for i=0 this is of size in_dim, while for the higher  
+            # layers, the input is the previous hidden state, so this now equals hidden_dim
+            input_dim = in_dim if i==0 else hidden_dim 
+            self.w_in_list.append(torch.nn.Parameter(
+                torch.empty((4 * hidden_dim, input_dim), dtype=dtype, device=device)
+                .uniform_(-weight_range, weight_range))
+            )
+            self.bias_list.append(torch.nn.Parameter(torch.zeros(4 * hidden_dim)))
+
+    def forward(self, X_in, h=None, c=None):
+        # X_in: (seq_length, batches, in_dim)
+        # h_prev: (layers, batches, hidden_dim)
+        # c_prev: (layers, batches, hidden_dim)
+        # output: (seq_length, batches, hidden_dim)
+
+        if h is None:
+            h = [torch.zeros(X_in.shape[1], self.hidden_dim) for _ in range(self.num_layers)]
+        if c is None:
+            c = [torch.zeros(X_in.shape[1], self.hidden_dim) for _ in range(self.num_layers)]
+        output = torch.zeros((X_in.shape[0], X_in.shape[1], self.hidden_dim))
+
+        for t in range(X_in.shape[0]):
+            x = X_in[t]
+
+            for i in range(self.num_layers):
+                # LSTM cell calculations
+                combined = x @ self.w_in_list[i].T + h[i] @ self.w_hidden_list[i].T + self.bias_list[i]
+                gate_size = self.hidden_dim
+                input_gate = torch.sigmoid(combined[:, :gate_size])
+                forget_gate = torch.sigmoid(combined[:, gate_size:2*gate_size])
+                output_gate = torch.sigmoid(combined[:, 2*gate_size:3*gate_size])
+                g_cell = torch.tanh(combined[:, 3*gate_size:])
+
+                # Calculate new cell and hidden state for this layer
+                c[i] = forget_gate * c[i] + input_gate * g_cell
+                h[i] = output_gate * torch.tanh(c[i])
+                x = h[i]
+
+            output[t] = h[-1]
+
+        return output, (h, c)
+
+class generic(torch.nn.module):
+
+    def __init__(self):
+        super().__init__()
+
+    def forward(self):
+        pass
+
+    def _str__(self):
+        pass
