@@ -17,7 +17,9 @@ def relu(x):
     return (x>0)*x
 
 def softmax(x: Tensor, dim_sum: int) -> Tensor:
-    return torch.exp(x)/torch.sum(torch.exp(x), dim_sum, keepdim=True)
+    maxval = torch.max(x, dim_sum, keepdim=True).values
+    return torch.exp(x-maxval)/torch.sum(torch.exp(x-maxval), dim_sum, keepdim=True)
+
 
 def one_hot_encode(y: Tensor, n_classes: int) -> Tensor:
     "(batch, 1) -> (batch, n_classes)"
