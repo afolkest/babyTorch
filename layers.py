@@ -246,6 +246,8 @@ class LSTM(torch.nn.Module):
         # c_prev: (layers, batches, hidden_dim)
         # output: (seq_length, batches, hidden_dim)
 
+        # TODO: implement dropout
+
         if h is None:
             h = [torch.zeros(X_in.shape[1], self.hidden_dim) for _ in range(self.num_layers)]
         if c is None:
@@ -272,3 +274,33 @@ class LSTM(torch.nn.Module):
             output[t] = h[-1]
 
         return output, (h, c)
+    
+class Embedding(torch.nn.Module):
+    def __init__(self, in_dim, embedd_dim):
+        super().__init__()
+        self.in_dim = in_dim
+        self.out_dim = embedd_dim 
+        self.lookup = torch.nn.Parameter(torch.randn((in_dim, embedd_dim)))
+
+    def forward(self, ix):
+        return self.lookup[ix] 
+
+class LayerNorm(torch.nn.Module): 
+    def __init__(self, features, eps=1.0e-5, withbias=True):
+        super().__init__()
+        self.scale = torch.nn.Parameter(torch.ones(features))
+        self.bias = torch.nn.Parameter(torch.zeros(features))
+        self.eps=eps
+        self.withbias=withbias
+
+    def forward(self, X): 
+        # X of size (*, features)
+        mean = torch.mean(X, dim=-1, keepdim=True) 
+        var = torch.var(X, dim=-1, keepdim=True)
+        out = self.scale * (X - mean) / torch.sqrt(var + self.eps) 
+        if self.withbias:
+            out += self.bias 
+        return out
+
+class SelfAttention(torch.nn.Module):
+    pass 
