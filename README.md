@@ -9,9 +9,10 @@ What is implemented so far:
   - Adam and SGD optimization
   - Linear layers
   - Dropout layers (1d)
-  - Convolutional layers (2d)
-  - Maxpool layers (2d)
+  - Convolutional layer (2d)
+  - Maxpool layer (2d)
   - Long short-term memory (LSTM)
+  - Multihead attention 
 
 There are currently also three included examples training a MLP, a CNN, and a
 LSTM. 
