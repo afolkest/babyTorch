@@ -49,7 +49,7 @@ class Trainer():
     def train(self, model, X, y, batch_size, epochs, learning_rate=1e-2, saveBest=True, 
               X_val=None, y_val=None, lr_schedule=None):
 
-        model.training = True
+        model.train()
 
         for epoch in range(epochs): 
             running_loss = 0.0
@@ -87,13 +87,13 @@ class Trainer():
                     running_loss = 0.0
 
             # Evaluate accuracy on test and valid set (if present)
-            model.training = False 
+            model.eval()
             train_acc = model.get_classification_accuracy(X, y, batch_size)
             self.train_accuracy_hist.append(train_acc)
             if X_val is not None:
                 valid_acc = model.get_classification_accuracy(X_val, y_val, batch_size)
                 self.valid_accuracy_hist.append(valid_acc)
-            model.training = True 
+            model.train()
 
             # Save model, if performance is the best so far
             cur_accuracy = train_acc if X_val is None else valid_acc 
@@ -123,4 +123,14 @@ class Trainer():
         ax2.set_ylabel('accuracy')
 
         plt.show()
+    
+    def diag_train_dynamics(self, instances, learning_rate=1e-2, X_val=None, y_val=None):
+        """ Train the network on a given number instances and plot statistics of activations and 
+        relative changes in network parameters, to see if 
+        1) signals propagate through the network without too much amplification/attenuation
+        2) whether we tend to have saturating neurons (for saturating activations)
+        3) the relative rate at which parameters change in a step 
+        """
+        # TODO: implement this function
+        pass
 
