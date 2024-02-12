@@ -380,20 +380,21 @@ class PositionalEncoder(torch.nn.Module):
 
         pos_encoder = torch.zeros((max_seq_len, embed_dim)) 
         positions = torch.arange(max_seq_len).unsqueeze(1)
-        frequency = (10000 ** (-2 * torch.arange(embed_dim) / embed_dim )).unsqueeze(0)
+        frequency = (10000 ** (- torch.arange(embed_dim) / embed_dim )).unsqueeze(0)
         pos_encoder[:, 0::2] = torch.sin(positions * frequency[:, 0::2])
-        pos_encoder[:, 1::2] = torch.cos(positions * frequency[:, 1::2])
+        pos_encoder[:, 1::2] = torch.cos(positions * frequency[:, 0::2]) 
 
         self.register_buffer('positional_encoder', pos_encoder)
         self.dropout= Dropout_1d(dropout)
 
     def forward(self, X): 
         # X: (batch, seq_length, embed_dim)
-        seq_len = X.shape[1] 
+        seq_len = X.shape[-2] 
         if seq_len > self.max_seq_len:
             raise ValueError("Input sequence length exceeds max sequence length of positional \
                              encoder")
         return X + self.dropout(self.positional_encoder[0:seq_len])
+
 
 class TransformerDecoderBlock(torch.nn.Module):
     pass
