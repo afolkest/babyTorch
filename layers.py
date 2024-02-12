@@ -246,7 +246,7 @@ class LSTM(torch.nn.Module):
         # c_prev: (layers, batches, hidden_dim)
         # output: (seq_length, batches, hidden_dim)
 
-        # TODO: implement dropout
+        # TODO: implement dropout, switch to batches-first input
 
         if h is None:
             h = [torch.zeros(X_in.shape[1], self.hidden_dim) for _ in range(self.num_layers)]
@@ -302,5 +302,77 @@ class LayerNorm(torch.nn.Module):
             out += self.bias 
         return out
 
-class SelfAttention(torch.nn.Module):
-    pass 
+class MultiHeadAttention(torch.nn.Module):
+    def __init__(self, embed_dim, num_heads, dropout=None, device=None, dtype=None):
+        """
+        keys, queries, vals ~ (batches, seq_length, embed_dim)
+        """
+        super().__init__()
+        self.embed_dim = embed_dim
+        self.num_heads = num_heads 
+        self.dropout = dropout 
+        self.head_dim = embed_dim // num_heads
+
+        if dropout is not None:
+            if dropout < 0: 
+                raise ValueError("Negative dropout")
+            self.dropoutlayer = Dropout_1d(dropout)
+
+        if embed_dim % num_heads != 0:
+            raise ValueError("Embedding dimension must be divisible by num_heads")
+
+        weight_bound = math.sqrt(3/embed_dim)
+        self.in_weights = torch.nn.Parameter(
+            torch.empty((3, embed_dim, embed_dim), dtype=dtype, device=device)
+            .uniform_(-weight_bound, weight_bound)
+        )
+        self.out_weights = torch.nn.Parameter(
+            torch.empty((embed_dim, embed_dim), dtype=dtype, device=device)
+            .uniform_(-weight_bound, weight_bound)
+        )
+        # TODO: Add dropout layer
+
+    def forward(self, key, query, value, mask=None):
+        """
+        input: key, query, value ~ (batches, seq_len, embed_dim)
+        output: (batches, seq_len, embed_dim)
+        mask: (seq_len, seq_len) populated by ones and zeros, or something that can be 
+        broadcast to (batches, heads, seq_len, seq_len). Alternatively, the keyword
+        "mask="causal" can be given for causal attention. 
+        """
+        n_batch = key.shape[0]
+        seq_len = key.shape[1]
+
+        # project full qkv's into set of qkv's for the heads
+        # each final tensor has size (batches, heads, seq_len, head_dim)
+        keys = (key @ self.in_weights[0]).view(n_batch, -1, self.num_heads, self.head_dim).transpose(1,2)
+        queries = (query @ self.in_weights[1]).view(n_batch, -1, self.num_heads, self.head_dim).transpose(1,2)
+        values = (value @ self.in_weights[2]).view(n_batch, -1, self.num_heads, self.head_dim).transpose(1,2) 
+
+        #compute similarities for all heads: softmax(Q K^T / sqrt{head_dim} )
+        #size: (batches, heads, seq_len, seq_len)
+        q_dot_k = queries @ keys.transpose(-1, -2) / math.sqrt(self.head_dim)
+
+        if mask=="causal":
+            mask = torch.tril(torch.ones((seq_len, seq_len))) #matrix with zeros above diagonal
+            q_dot_k = q_dot_k.masked_fill( mask == 0, -float('inf'))
+        elif mask is not None:
+            q_dot_k = q_dot_k * mask 
+
+        compatibilities = torch.softmax(q_dot_k, -1)
+        if self.dropout is not None:
+            compatibilities = self.dropoutlayer(compatibilities)
+        # matmult -> (batches, heads, seq_len, head_dim)
+        # transpose+rehsape -> (batches, seq_len, embed_dim)
+        attentions = (compatibilities @ values).transpose(1, 2).reshape(n_batch, seq_len, -1)
+
+        if self.dropout is not None:
+            attentions = self.dropoutlayer(attentions)
+
+        return attentions @ self.out_weights
+
+class PositionEncoding(torch.nn.Module):
+    pass
+
+class TransformerDecoderBlock(torch.nn.Module):
+    pass
