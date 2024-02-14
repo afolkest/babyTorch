@@ -395,6 +395,30 @@ class PositionalEncoder(torch.nn.Module):
                              encoder")
         return X + self.dropout(self.positional_encoder[0:seq_len])
 
+class TransformerEncoderBlock(torch.nn.Module):
+    def __init__(self, embed_dim, num_heads, d_ffn, dropout=None, device=None, dtype=None):
+        super().__init__()
+        self.embed_dim = embed_dim
+        self.d_ffn = d_ffn
+
+        self.self_attention = MultiHeadAttention(embed_dim, num_heads, dropout=dropout, device=device, 
+                                            dtype=dtype)
+        self.layernorm = LayerNorm(embed_dim)
+        self.linear1 = Linear(embed_dim, self.d_ffn, weight_init_scheme="kaiming", device=device,
+                              dtype=dtype)
+        self.linear2 = Linear(self.d_ffn, embed_dim, weight_init_scheme="kaiming", device=device,
+                              dtype=dtype)
+        self.dropout = Dropout_1d(dropout)
+
+    def forward(self, input, mask=None):
+        # input: (batch_size, seq_len, embed_dim)
+        # output: (batch_size, seq_len, embed_dim)
+        # mask="causal" gives a causal mask (no attention to future tokens)
+        self_atn = self.self_attention(input, input, input, mask=mask)
+        x = self.layernorm(self_atn + self.dropout(self_atn))
+        fnn = self.linear2(functions.relu(self.linear1(x)))
+        return self.layernorm(x + self.dropout(fnn))
 
 class TransformerDecoderBlock(torch.nn.Module):
     pass
+
