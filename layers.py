@@ -403,7 +403,8 @@ class TransformerEncoderBlock(torch.nn.Module):
 
         self.self_attention = MultiHeadAttention(embed_dim, num_heads, dropout=dropout, device=device, 
                                             dtype=dtype)
-        self.layernorm = LayerNorm(embed_dim)
+        self.layernorm1 = LayerNorm(embed_dim)
+        self.layernorm2 = LayerNorm(embed_dim)
         self.linear1 = Linear(embed_dim, self.d_ffn, weight_init_scheme="kaiming", device=device,
                               dtype=dtype)
         self.linear2 = Linear(self.d_ffn, embed_dim, weight_init_scheme="kaiming", device=device,
@@ -415,10 +416,37 @@ class TransformerEncoderBlock(torch.nn.Module):
         # output: (batch_size, seq_len, embed_dim)
         # mask="causal" gives a causal mask (no attention to future tokens)
         self_atn = self.self_attention(input, input, input, mask=mask)
-        x = self.layernorm(self_atn + self.dropout(self_atn))
+        x = self.layernorm1(self_atn + self.dropout(self_atn))
         fnn = self.linear2(functions.relu(self.linear1(x)))
-        return self.layernorm(x + self.dropout(fnn))
+        return self.layernorm2(x + self.dropout(fnn))
 
 class TransformerDecoderBlock(torch.nn.Module):
-    pass
+    def __init__(self, embed_dim, num_heads, d_ffn, dropout=None, device=None, dtype=None):
+        super().__init__()
+        self.embed_dim = embed_dim
+        self.d_ffn = d_ffn
 
+        self.self_attention = MultiHeadAttention(embed_dim, num_heads, dropout=dropout, device=device, 
+                                            dtype=dtype)
+        self.cross_attention = MultiHeadAttention(embed_dim, num_heads, dropout=dropout, device=device, 
+                                            dtype=dtype)
+        self.layernorm1 = LayerNorm(embed_dim)
+        self.layernorm2 = LayerNorm(embed_dim)
+        self.layernorm3 = LayerNorm(embed_dim)
+        self.linear1 = Linear(embed_dim, self.d_ffn, weight_init_scheme="kaiming", device=device,
+                              dtype=dtype)
+        self.linear2 = Linear(self.d_ffn, embed_dim, weight_init_scheme="kaiming", device=device,
+                              dtype=dtype)
+        self.dropout = Dropout_1d(dropout)
+
+    def forward(self, dec_input, enc_output, mask=None, cross_mask=None):
+        # input, input_enc: (batch_size, seq_len, embed_dim)
+        # output: (batch_size, seq_len, embed_dim)
+        # mask="causal" gives a causal mask (no attention to future tokens)
+
+        self_atn = self.self_attention(dec_input, dec_input, dec_input, mask=mask)
+        x = self.layernorm1(dec_input + self.dropout(self_atn))
+        cross_atn = self.cross_attention(x, enc_output, enc_output, mask=cross_mask)
+        x = self.layernorm2(x + self.dropout(cross_atn))
+        fnn = self.linear2(functions.relu(self.linear1(x)))
+        return self.layernorm3(x + self.dropout(fnn))
