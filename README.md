@@ -13,13 +13,13 @@ What is implemented so far:
   - Maxpool layer (2d)
   - Long short-term memory (LSTM)
   - Multihead attention 
-  - Transformer encoder and decoder blocks 
+  - Transformer encoder and decoder layers
+  - Transformer-only decoder model 
 
 There are currently also three included examples training a MLP, a CNN, and a
 LSTM. 
 
 Currently under implementation:
-  - Transformer 
   - Training of Bach chorale generator using LSTM 
 
 <!--
