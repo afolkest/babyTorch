@@ -133,3 +133,49 @@ class CNN(torch.nn.Module):
             correct_predict += torch.sum(torch.argmax(y_batch, dim=-1) 
                                          == torch.argmax(y_pred, dim=-1)).item()
         return correct_predict / y.shape[0]
+
+class DecoderOnlyTransformer(torch.nn.Module): 
+    # decoder only transformer simple language model 
+    def __init__(self, vocab_size, embed_dim, num_heads, num_blocks, d_ffn, mask="causal", 
+                 dropout=0.1, device=None, dtype=None, max_seq=5000):
+        super().__init__()
+        self.vocab_size = vocab_size
+        self.embed_dim = embed_dim 
+        self.num_blocks = num_blocks
+
+        self.embedding = layers.Embedding(vocab_size, embed_dim)
+        self.posencoder = layers.PositionalEncoder(embed_dim, dropout=dropout, max_seq_len=max_seq)
+        decoder_list =[]
+        for i in range(num_blocks):
+            decoder_list.append(
+                layers.TransformerEncoderBlock(embed_dim, num_heads, d_ffn, dropout=dropout, 
+                                               device=device, dtype=dtype)
+            )
+        self.decoders = torch.nn.ModuleList(decoder_list)
+        self.final_ffn = layers.Linear(embed_dim, vocab_size)
+
+    def forward(self, input, input_mask="causal", hidden_mask=None): 
+        # input: (batch, seq_len, vocab_size)
+        encoded = self.posencoder(self.embedding(input))
+        out = self.decoders[0](encoded, mask=input_mask)
+        for lay in self.decoders[1:]:
+            out = lay(out, mask=hidden_mask)
+        return functions.softmax(self.final_ffn(out), dim_sum=-1)
+
+    @torch.no_grad
+    def get_classification_accuracy(self, X, y, batch_size=64, input_mask="causal", 
+                                    hidden_mask=None):
+        # input: (batch, seq_len, vocab_size)
+        self.eval()
+        correct_predict = 0
+        n_batches = X.shape[0] // batch_size
+
+        for i in range(n_batches): 
+            start = i * batch_size 
+            end = min(start+batch_size, X.shape[0])
+            X_batch = X[start:end]
+            y_batch = y[start:end]
+            y_pred = self(X_batch, input_mask=input_mask, hidden_mask=hidden_mask)[:, -1, :]
+            correct_predict += torch.sum(torch.argmax(y_batch, dim=-1) 
+                                         == torch.argmax(y_pred, dim=-1)).item()
+        return correct_predict / y.shape[0]
