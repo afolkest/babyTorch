@@ -215,12 +215,11 @@ class LSTM(torch.nn.Module):
         dtype (torch.dtype, optional): Data type for the layer parameters and operations. 
         device (torch.device, optional): Device for the layer parameters and operations. 
     """
-    def __init__(self, in_dim, hidden_dim, num_layers=1, p_dropout=0, dtype=None, device=None):
+    def __init__(self, in_dim, hidden_dim, num_layers=1, dtype=None, device=None):
         super().__init__()
         self.in_dim = in_dim 
         self.hidden_dim = hidden_dim
         self.num_layers = num_layers
-        self.p_dropout = p_dropout
 
         weight_range =  math.sqrt(1/hidden_dim)
         self.w_hidden_list = torch.nn.ParameterList()
@@ -247,8 +246,6 @@ class LSTM(torch.nn.Module):
         # h_prev: (layers, batches, hidden_dim)
         # c_prev: (layers, batches, hidden_dim)
         # output: (seq_length, batches, hidden_dim)
-
-        # TODO: implement dropout, switch to batches-first input
 
         if h is None:
             h = [torch.zeros(X_in.shape[1], self.hidden_dim) for _ in range(self.num_layers)]
@@ -278,14 +275,18 @@ class LSTM(torch.nn.Module):
         return output, (h, c)
     
 class Embedding(torch.nn.Module):
-    def __init__(self, in_dim, embedd_dim):
+    def __init__(self, in_dim, embed_dim):
         super().__init__()
         self.in_dim = in_dim
-        self.out_dim = embedd_dim 
-        self.lookup = torch.nn.Parameter(torch.randn((in_dim, embedd_dim)))
+        self.out_dim = embed_dim 
+        self.lookup = torch.nn.Parameter(torch.randn((in_dim, embed_dim)))
 
-    def forward(self, ix):
-        return self.lookup[ix] 
+    def forward(self, input):
+        # input ~ (batches, seqlen), (batches, seqlen, 1), or (batches, seqlen, vocab_size)
+        if len(input.shape) == 2 or input.shape[-1] == 1:
+            return self.lookup[input, :]  
+        else: # assume input are onehot vectors 
+            return self.lookup[input.argmax(-1), :]  
 
 class LayerNorm(torch.nn.Module): 
     def __init__(self, features, eps=1.0e-5, withbias=True):
@@ -363,6 +364,7 @@ class MultiHeadAttention(torch.nn.Module):
         compatibilities = torch.softmax(q_dot_k, -1)
         if self.dropout is not None:
             compatibilities = self.dropoutlayer(compatibilities)
+
         # matmult -> (batches, heads, seq_len, head_dim)
         # transpose+rehsape -> (batches, seq_len, embed_dim)
         attentions = (compatibilities @ values).transpose(1, 2).reshape(n_batch, seq_len, -1)
