@@ -135,7 +135,7 @@ class CNN(torch.nn.Module):
         return correct_predict / y.shape[0]
 
 class DecoderOnlyTransformer(torch.nn.Module): 
-    # decoder only transformer simple language model 
+    # decoder only transformer 
     def __init__(self, vocab_size, embed_dim, num_heads, num_blocks, d_ffn, mask="causal", 
                  dropout=0.1, device=None, dtype=None, max_seq=5000):
         super().__init__()
