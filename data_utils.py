@@ -1,6 +1,7 @@
 import pathlib
 import torch 
 import numpy as np
+import pandas as pd 
 from sklearn.datasets import fetch_openml 
 
 def load_mnist(device): 
@@ -41,11 +42,19 @@ def load_cifar(device):
         torch.save(y, label_path)
     return X, y
 
-def load_bach(device): 
+def load_bach(device="cpu"): 
     "Loads the Bach chorale dataset"
     script_directory = pathlib.Path(__file__).parent
     data_dir = script_directory / "datasets" / "jsb_chorales" 
-    train_files = [i for i in data_dir.glob('test/*.*')]
+    train_files = [i for i in data_dir.glob('train/*.*')]
     valid_files = [i for i in data_dir.glob('valid/*.*')]
     test_files = [i for i in data_dir.glob('test/*.*')] 
-    # TODO: add functionality loading choralest to torch tensors
+
+    test, val, train = [], [], []
+    for file in train_files: 
+        train.append(torch.tensor(pd.read_csv(file).values, dtype=torch.torch.uint8))
+    for file in valid_files: 
+        val.append(torch.tensor(pd.read_csv(file).values, dtype=torch.torch.uint8))
+    for file in test_files: 
+        test.append(torch.tensor(pd.read_csv(file).values, dtype=torch.torch.uint8))
+    return train, val, test
