@@ -46,7 +46,7 @@ class Trainer():
         self.cur_best_accuracy = 0
         self.save_path = save_path 
 
-    def train(self, model, X, y, batch_size, epochs, learning_rate=1e-2, saveBest=True, 
+    def train(self, model, X, y, batch_size, epochs, saveBest=True, 
               X_val=None, y_val=None, lr_schedule=None):
 
         model.train()
@@ -77,8 +77,7 @@ class Trainer():
                 loss.backward()
 
                 with torch.no_grad(): 
-                    for param in model.parameters():
-                            param -= learning_rate * param.grad
+                        self.optimizer.step(model)
 
                 running_loss += loss.item()
                 if i % 100 == 0:  
@@ -124,12 +123,13 @@ class Trainer():
 
         plt.show()
     
-    def diag_train_dynamics(self, instances, learning_rate=1e-2, X_val=None, y_val=None):
+    def diag_train_dynamics(self, instances, X_val=None, y_val=None):
         """ Train the network on a given number instances and plot statistics of activations and 
         relative changes in network parameters, to see if 
         1) signals propagate through the network without too much amplification/attenuation
         2) whether we tend to have saturating neurons (for saturating activations)
         3) the relative rate at which parameters change in a step 
+        4) implement measurement of noise scale to determine optimal batch size 
         """
         # TODO: implement this function
         pass
