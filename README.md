@@ -19,9 +19,6 @@ What is implemented so far:
 There are currently also three included examples training a MLP, a CNN, and a
 LSTM. 
 
-Currently under implementation:
-  - Training of Bach chorale generator using LSTM 
-
 <!--
 # Bach dataset: https://github.com/ageron/handson-ml2/blob/master/datasets/jsb_chorales/jsb_chorales.tgz
 -->
